@@ -93,3 +93,17 @@ Helper Methods:
 * `worksheet.write_row(row_num, array_of_mixed_value, formats = nil)` - write values one by one, detecting type automatically. `formats` can be array, or Format object or nil
 * `format.font_family` - alias for `format.font_name`
 * `workbook.default_format.font_size` - set it to 0 if you want to use default font size (that what user set in Excel settings)
+
+## Gem maintenance and keeping up to date with *libxlsxwriter*
+
+There are 2 rake tasks:
+
+* `rake sync` will pull the latest *libxlsxwriter* code from the git repository into the gem.
+* `rake generate_ffi` will update the FFI bindings. This command is meant to be run with the right library in place. To help with the process, a Dockerfile is provided.
+
+To update the FFI bindings, build the container, then execute the rake task inside like so:
+
+```
+docker build -t ubuntu-ruby-fastexcel .
+docker run -it -v $(pwd):/fast_excel ubuntu-ruby-fastexcel bash -c "cd /fast_excel && bundle && rake generate_ffi"
+```
