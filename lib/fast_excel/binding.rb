@@ -19,6 +19,58 @@ module Libxlsxwriter
     end
   end
   
+  SHEETNAME_MAX = 31
+  
+  MAX_COL_NAME_LENGTH = "$XFD".length
+  
+  MAX_ROW_NAME_LENGTH = "$1048576".length
+  
+  MAX_CELL_NAME_LENGTH = "$XFWD$1048576".length
+  
+  DATETIME_LENGTH = "2016-12-12T23:00:00Z".length
+  
+  EPOCH_1900 = 0
+  
+  EPOCH_1904 = 1
+  
+  UINT32_T_LENGTH = "4294967296".length
+  
+  FILENAME_LENGTH = 128
+  
+  IGNORE = 1
+  
+  SCHEMA_MS = "http://schemas.microsoft.com/office/2006/relationships"
+  
+  SCHEMA_ROOT = "http://schemas.openxmlformats.org"
+  
+  def error(message)
+    raise NotImplementedError
+  end
+  
+  def mem_error()
+    error("Memory allocation failed.")
+  end
+  
+  def warn(message)
+    raise NotImplementedError
+  end
+  
+  def warn_format(message)
+    raise NotImplementedError
+  end
+  
+  def warn_format1(message, var)
+    raise NotImplementedError
+  end
+  
+  def warn_format2(message, var1, var2)
+    raise NotImplementedError
+  end
+  
+  def uint32_host(n)
+    n
+  end
+  
   FORMAT_FIELD_LEN = 128
   
   DEFAULT_FONT_NAME = "Calibri"
@@ -40,6 +92,18 @@ module Libxlsxwriter
   CHART_NUM_FORMAT_LEN = 128
   
   CHART_DEFAULT_GAP = 501
+  
+  def cell(cell)
+    return name_to_row(cell), name_to_col(cell)
+  end
+  
+  def cols(cols)
+    return name_to_col(cols), name_to_col_2(cols)
+  end
+  
+  def range(range)
+    return name_to_row(range), name_to_col(range), name_to_row_2(range), name_to_col_2(range)
+  end
   
   ROW_MAX = 1048576
   
@@ -68,6 +132,270 @@ module Libxlsxwriter
   ATTR_32 = 32
   
   VERSION = "0.7.6"
+  
+  # (Not documented)
+  # 
+  # <em>This entry is only for documentation and no real method. The FFI::Enum can be accessed via #enum_type(:boolean).</em>
+  # 
+  # === Options:
+  # :false_ ::
+  #   False value.
+  # :true_ ::
+  #   True value.
+  # 
+  # @method _enum_boolean_
+  # @return [Symbol]
+  # @scope class
+  enum :boolean, [
+    :false_, 0,
+    :true_, 1
+  ]
+  
+  # (Not documented)
+  # 
+  # <em>This entry is only for documentation and no real method. The FFI::Enum can be accessed via #enum_type(:error).</em>
+  # 
+  # === Options:
+  # :no_error ::
+  #   No error.
+  # :error_memory_malloc_failed ::
+  #   Memory error, failed to malloc() required memory.
+  # :error_creating_xlsx_file ::
+  #   Error creating output xlsx file. Usually a permissions error.
+  # :error_creating_tmpfile ::
+  #   Error encountered when creating a tmpfile during file assembly.
+  # :error_zip_file_operation ::
+  #   Zlib error with a file operation while creating xlsx file.
+  # :error_zip_file_add ::
+  #   Zlib error when adding sub file to xlsx file.
+  # :error_zip_close ::
+  #   Zlib error when closing xlsx file.
+  # :error_null_parameter_ignored ::
+  #   NULL function parameter ignored.
+  # :error_parameter_validation ::
+  #   Function parameter validation error.
+  # :error_sheetname_length_exceeded ::
+  #   Worksheet name exceeds Excel's limit of 31 characters.
+  # :error_invalid_sheetname_character ::
+  #   Worksheet name contains invalid Excel character: '():*?/\\'
+  # :error_sheetname_already_used ::
+  #   Worksheet name is already in use.
+  # :error_32_string_length_exceeded ::
+  #   Parameter exceeds Excel's limit of 32 characters.
+  # :error_128_string_length_exceeded ::
+  #   Parameter exceeds Excel's limit of 128 characters.
+  # :error_255_string_length_exceeded ::
+  #   Parameter exceeds Excel's limit of 255 characters.
+  # :error_max_string_length_exceeded ::
+  #   String exceeds Excel's limit of 32,767 characters.
+  # :error_shared_string_index_not_found ::
+  #   Error finding internal string index.
+  # :error_worksheet_index_out_of_range ::
+  #   Worksheet row or column index out of range.
+  # :error_worksheet_max_number_urls_exceeded ::
+  #   Maximum number of worksheet URLs (65530) exceeded.
+  # :error_image_dimensions ::
+  #   Couldn't read image dimensions or DPI.
+  # :max_errno ::
+  #   
+  # 
+  # @method _enum_error_
+  # @return [Symbol]
+  # @scope class
+  enum :error, [
+    :no_error, 0,
+    :error_memory_malloc_failed, 1,
+    :error_creating_xlsx_file, 2,
+    :error_creating_tmpfile, 3,
+    :error_zip_file_operation, 4,
+    :error_zip_file_add, 5,
+    :error_zip_close, 6,
+    :error_null_parameter_ignored, 7,
+    :error_parameter_validation, 8,
+    :error_sheetname_length_exceeded, 9,
+    :error_invalid_sheetname_character, 10,
+    :error_sheetname_already_used, 11,
+    :error_32_string_length_exceeded, 12,
+    :error_128_string_length_exceeded, 13,
+    :error_255_string_length_exceeded, 14,
+    :error_max_string_length_exceeded, 15,
+    :error_shared_string_index_not_found, 16,
+    :error_worksheet_index_out_of_range, 17,
+    :error_worksheet_max_number_urls_exceeded, 18,
+    :error_image_dimensions, 19,
+    :max_errno, 20
+  ]
+  
+  # (Not documented)
+  # 
+  # = Fields:
+  # :year ::
+  #   (Integer) Year     : 1900 - 9999
+  # :month ::
+  #   (Integer) Month    : 1 - 12
+  # :day ::
+  #   (Integer) Day      : 1 - 31
+  # :hour ::
+  #   (Integer) Hour     : 0 - 23
+  # :min ::
+  #   (Integer) Minute   : 0 - 59
+  # :sec ::
+  #   (Float) Seconds  : 0 - 59.999
+  module DatetimeWrappers
+    # @param [Integer] date_1904 
+    # @return [Float] 
+    def to_excel_date(date_1904)
+      Libxlsxwriter.datetime_to_excel_date(self, date_1904)
+    end
+  end
+  
+  class Datetime < FFI::Struct
+    include DatetimeWrappers
+    layout :year, :int,
+           :month, :int,
+           :day, :int,
+           :hour, :int,
+           :min, :int,
+           :sec, :double
+  end
+  
+  # (Not documented)
+  # 
+  # <em>This entry is only for documentation and no real method. The FFI::Enum can be accessed via #enum_type(:custom_property_types).</em>
+  # 
+  # === Options:
+  # :none ::
+  #   
+  # :string ::
+  #   
+  # :double ::
+  #   
+  # :integer ::
+  #   
+  # :boolean ::
+  #   
+  # :datetime ::
+  #   
+  # 
+  # @method _enum_custom_property_types_
+  # @return [Symbol]
+  # @scope class
+  enum :custom_property_types, [
+    :none, 0,
+    :string, 1,
+    :double, 2,
+    :integer, 3,
+    :boolean, 4,
+    :datetime, 5
+  ]
+  
+  # (Not documented)
+  # 
+  # = Fields:
+  # :stqh_first ::
+  #   (FFI::Pointer(*Format)) 
+  # :stqh_last ::
+  #   (FFI::Pointer(**Format)) 
+  class Formats < FFI::Struct
+    layout :stqh_first, :pointer,
+           :stqh_last, :pointer
+  end
+  
+  # (Not documented)
+  # 
+  # = Fields:
+  # :stqh_first ::
+  #   (FFI::Pointer(*Tuple)) 
+  # :stqh_last ::
+  #   (FFI::Pointer(**Tuple)) 
+  class Tuples < FFI::Struct
+    layout :stqh_first, :pointer,
+           :stqh_last, :pointer
+  end
+  
+  # (Not documented)
+  # 
+  # = Fields:
+  # :stqh_first ::
+  #   (FFI::Pointer(*CustomProperty)) 
+  # :stqh_last ::
+  #   (FFI::Pointer(**CustomProperty)) 
+  class CustomProperties < FFI::Struct
+    layout :stqh_first, :pointer,
+           :stqh_last, :pointer
+  end
+  
+  # (Not documented)
+  # 
+  # = Fields:
+  # :stqe_next ::
+  #   (FFI::Pointer(*Tuple)) 
+  class TupleListPointers < FFI::Struct
+    layout :stqe_next, :pointer
+  end
+  
+  # (Not documented)
+  # 
+  # = Fields:
+  # :key ::
+  #   (String) 
+  # :value ::
+  #   (String) 
+  # :list_pointers ::
+  #   (TupleListPointers) 
+  class Tuple < FFI::Struct
+    layout :key, :string,
+           :value, :string,
+           :list_pointers, TupleListPointers.by_value
+  end
+  
+  # (Not documented)
+  # 
+  # = Fields:
+  # :string ::
+  #   (String) 
+  # :number ::
+  #   (Float) 
+  # :integer ::
+  #   (Integer) 
+  # :boolean ::
+  #   (Integer) 
+  # :datetime ::
+  #   (Datetime) 
+  class CustomPropertyU < FFI::Union
+    layout :string, :string,
+           :number, :double,
+           :integer, :int,
+           :boolean, :uchar,
+           :datetime, Datetime.by_value
+  end
+  
+  # (Not documented)
+  # 
+  # = Fields:
+  # :stqe_next ::
+  #   (FFI::Pointer(*CustomProperty)) 
+  class CustomPropertyListPointers < FFI::Struct
+    layout :stqe_next, :pointer
+  end
+  
+  # (Not documented)
+  # 
+  # = Fields:
+  # :type ::
+  #   (Symbol from _enum_custom_property_types_) 
+  # :name ::
+  #   (String) 
+  # :u ::
+  #   (CustomPropertyU) 
+  # :list_pointers ::
+  #   (CustomPropertyListPointers) 
+  class CustomProperty < FFI::Struct
+    layout :type, :custom_property_types,
+           :name, :string,
+           :u, CustomPropertyU.by_value,
+           :list_pointers, CustomPropertyListPointers.by_value
+  end
   
   # (Not documented)
   # 
@@ -2868,7 +3196,7 @@ module Libxlsxwriter
     end
     
     # @param [FFI::Pointer(*ChartPoint)] points 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_points(points)
       Libxlsxwriter.chart_series_set_points(self, points)
     end
@@ -3535,7 +3863,7 @@ module Libxlsxwriter
     end
     
     # @param [FFI::Pointer(*Short)] delete_series 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def legend_delete_series(delete_series)
       Libxlsxwriter.chart_legend_delete_series(self, delete_series)
     end
@@ -3894,9 +4222,9 @@ module Libxlsxwriter
   # @method chart_series_set_points(series, points)
   # @param [ChartSeries] series 
   # @param [FFI::Pointer(*ChartPoint)] points 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :chart_series_set_points, :chart_series_set_points, [ChartSeries, :pointer], :char
+  attach_function :chart_series_set_points, :chart_series_set_points, [ChartSeries, :pointer], :error
   
   # (Not documented)
   # 
@@ -4424,9 +4752,9 @@ module Libxlsxwriter
   # @method chart_legend_delete_series(chart, delete_series)
   # @param [Chart] chart 
   # @param [FFI::Pointer(*Short)] delete_series 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :chart_legend_delete_series, :chart_legend_delete_series, [Chart, :pointer], :char
+  attach_function :chart_legend_delete_series, :chart_legend_delete_series, [Chart, :pointer], :error
   
   # (Not documented)
   # 
@@ -4619,9 +4947,9 @@ module Libxlsxwriter
   # @param [Integer] rows 
   # @param [Integer] cols 
   # @param [Integer] col 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :chart_add_data_cache, :lxw_chart_add_data_cache, [SeriesRange, :pointer, :ushort, :uchar, :uchar], :char
+  attach_function :chart_add_data_cache, :lxw_chart_add_data_cache, [SeriesRange, :pointer, :ushort, :uchar, :uchar], :error
   
   # (Not documented)
   # 
@@ -4867,6 +5195,172 @@ module Libxlsxwriter
   # @return [nil] 
   # @scope class
   attach_function :add_drawing_object, :lxw_add_drawing_object, [Drawing, DrawingObject], :void
+  
+  # (Not documented)
+  # 
+  # @method strerror(error_num)
+  # @param [Symbol from _enum_error_] error_num 
+  # @return [String] 
+  # @scope class
+  attach_function :strerror, :lxw_strerror, [:error], :string
+  
+  # (Not documented)
+  # 
+  # @method quote_sheetname(str)
+  # @param [String] str 
+  # @return [String] 
+  # @scope class
+  attach_function :quote_sheetname, :lxw_quote_sheetname, [:string], :string
+  
+  # (Not documented)
+  # 
+  # @method col_to_name(col_name, col_num, absolute)
+  # @param [String] col_name 
+  # @param [Integer] col_num 
+  # @param [Integer] absolute 
+  # @return [nil] 
+  # @scope class
+  attach_function :col_to_name, :lxw_col_to_name, [:string, :ushort, :uchar], :void
+  
+  # (Not documented)
+  # 
+  # @method rowcol_to_cell(cell_name, row, col)
+  # @param [String] cell_name 
+  # @param [Integer] row 
+  # @param [Integer] col 
+  # @return [nil] 
+  # @scope class
+  attach_function :rowcol_to_cell, :lxw_rowcol_to_cell, [:string, :uint, :ushort], :void
+  
+  # (Not documented)
+  # 
+  # @method rowcol_to_cell_abs(cell_name, row, col, abs_row, abs_col)
+  # @param [String] cell_name 
+  # @param [Integer] row 
+  # @param [Integer] col 
+  # @param [Integer] abs_row 
+  # @param [Integer] abs_col 
+  # @return [nil] 
+  # @scope class
+  attach_function :rowcol_to_cell_abs, :lxw_rowcol_to_cell_abs, [:string, :uint, :ushort, :uchar, :uchar], :void
+  
+  # (Not documented)
+  # 
+  # @method rowcol_to_range(range, first_row, first_col, last_row, last_col)
+  # @param [String] range 
+  # @param [Integer] first_row 
+  # @param [Integer] first_col 
+  # @param [Integer] last_row 
+  # @param [Integer] last_col 
+  # @return [nil] 
+  # @scope class
+  attach_function :rowcol_to_range, :lxw_rowcol_to_range, [:string, :uint, :ushort, :uint, :ushort], :void
+  
+  # (Not documented)
+  # 
+  # @method rowcol_to_range_abs(range, first_row, first_col, last_row, last_col)
+  # @param [String] range 
+  # @param [Integer] first_row 
+  # @param [Integer] first_col 
+  # @param [Integer] last_row 
+  # @param [Integer] last_col 
+  # @return [nil] 
+  # @scope class
+  attach_function :rowcol_to_range_abs, :lxw_rowcol_to_range_abs, [:string, :uint, :ushort, :uint, :ushort], :void
+  
+  # (Not documented)
+  # 
+  # @method rowcol_to_formula_abs(formula, sheetname, first_row, first_col, last_row, last_col)
+  # @param [String] formula 
+  # @param [String] sheetname 
+  # @param [Integer] first_row 
+  # @param [Integer] first_col 
+  # @param [Integer] last_row 
+  # @param [Integer] last_col 
+  # @return [nil] 
+  # @scope class
+  attach_function :rowcol_to_formula_abs, :lxw_rowcol_to_formula_abs, [:string, :string, :uint, :ushort, :uint, :ushort], :void
+  
+  # (Not documented)
+  # 
+  # @method name_to_row(row_str)
+  # @param [String] row_str 
+  # @return [Integer] 
+  # @scope class
+  attach_function :name_to_row, :lxw_name_to_row, [:string], :uint
+  
+  # (Not documented)
+  # 
+  # @method name_to_col(col_str)
+  # @param [String] col_str 
+  # @return [Integer] 
+  # @scope class
+  attach_function :name_to_col, :lxw_name_to_col, [:string], :ushort
+  
+  # (Not documented)
+  # 
+  # @method name_to_row_2(row_str)
+  # @param [String] row_str 
+  # @return [Integer] 
+  # @scope class
+  attach_function :name_to_row_2, :lxw_name_to_row_2, [:string], :uint
+  
+  # (Not documented)
+  # 
+  # @method name_to_col_2(col_str)
+  # @param [String] col_str 
+  # @return [Integer] 
+  # @scope class
+  attach_function :name_to_col_2, :lxw_name_to_col_2, [:string], :ushort
+  
+  # (Not documented)
+  # 
+  # @method datetime_to_excel_date(datetime, date_1904)
+  # @param [Datetime] datetime 
+  # @param [Integer] date_1904 
+  # @return [Float] 
+  # @scope class
+  attach_function :datetime_to_excel_date, :lxw_datetime_to_excel_date, [Datetime, :uchar], :double
+  
+  # (Not documented)
+  # 
+  # @method strdup(str)
+  # @param [String] str 
+  # @return [String] 
+  # @scope class
+  attach_function :strdup, :lxw_strdup, [:string], :string
+  
+  # (Not documented)
+  # 
+  # @method strdup_formula(formula)
+  # @param [String] formula 
+  # @return [String] 
+  # @scope class
+  attach_function :strdup_formula, :lxw_strdup_formula, [:string], :string
+  
+  # (Not documented)
+  # 
+  # @method utf8_strlen(str)
+  # @param [String] str 
+  # @return [Integer] 
+  # @scope class
+  attach_function :utf8_strlen, :lxw_utf8_strlen, [:string], :ulong
+  
+  # (Not documented)
+  # 
+  # @method str_tolower(str)
+  # @param [String] str 
+  # @return [nil] 
+  # @scope class
+  attach_function :str_tolower, :lxw_str_tolower, [:string], :void
+  
+  # (Not documented)
+  # 
+  # @method tmpfile(tmpdir)
+  # @param [String] tmpdir 
+  # @return [FFI::Pointer(*FILE)] 
+  # @scope class
+  attach_function :tmpfile, :lxw_tmpfile, [:string], :pointer
   
   # (Not documented)
   # 
@@ -5460,7 +5954,7 @@ module Libxlsxwriter
   #   Note, the string list is restricted by Excel to 255 characters,
   #   including comma separators.
   # :value_datetime ::
-  #   (unknown) This parameter is used to set the limiting value to which the date or
+  #   (Datetime) This parameter is used to set the limiting value to which the date or
   #   time criteria is applied using a #lxw_datetime struct.
   # :minimum_number ::
   #   (Float) This parameter is the same as `value_number` but for the minimum value
@@ -5469,7 +5963,7 @@ module Libxlsxwriter
   #   (String) This parameter is the same as `value_formula` but for the minimum value
   #   when a `BETWEEN` criteria is used.
   # :minimum_datetime ::
-  #   (unknown) This parameter is the same as `value_datetime` but for the minimum value
+  #   (Datetime) This parameter is the same as `value_datetime` but for the minimum value
   #   when a `BETWEEN` criteria is used.
   # :maximum_number ::
   #   (Float) This parameter is the same as `value_number` but for the maximum value
@@ -5478,7 +5972,7 @@ module Libxlsxwriter
   #   (String) This parameter is the same as `value_formula` but for the maximum value
   #   when a `BETWEEN` criteria is used.
   # :maximum_datetime ::
-  #   (unknown) This parameter is the same as `value_datetime` but for the maximum value
+  #   (Datetime) This parameter is the same as `value_datetime` but for the maximum value
   #   when a `BETWEEN` criteria is used.
   # :input_title ::
   #   (String) The input_title parameter is used to set the title of the input message
@@ -5522,13 +6016,13 @@ module Libxlsxwriter
            :value_number, :double,
            :value_formula, :string,
            :value_list, :pointer,
-           :value_datetime, :char,
+           :value_datetime, Datetime.by_value,
            :minimum_number, :double,
            :minimum_formula, :string,
-           :minimum_datetime, :char,
+           :minimum_datetime, Datetime.by_value,
            :maximum_number, :double,
            :maximum_formula, :string,
-           :maximum_datetime, :char,
+           :maximum_datetime, Datetime.by_value,
            :input_title, :string,
            :input_message, :string,
            :error_title, :string,
@@ -5899,7 +6393,7 @@ module Libxlsxwriter
     # @param [Integer] col 
     # @param [Float] number 
     # @param [Format] format 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def write_number(row, col, number, format)
       Libxlsxwriter.worksheet_write_number(self, row, col, number, format)
     end
@@ -5908,7 +6402,7 @@ module Libxlsxwriter
     # @param [Integer] col 
     # @param [String] string 
     # @param [Format] format 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def write_string(row, col, string, format)
       Libxlsxwriter.worksheet_write_string(self, row, col, string, format)
     end
@@ -5917,7 +6411,7 @@ module Libxlsxwriter
     # @param [Integer] col 
     # @param [String] formula 
     # @param [Format] format 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def write_formula(row, col, formula, format)
       Libxlsxwriter.worksheet_write_formula(self, row, col, formula, format)
     end
@@ -5928,7 +6422,7 @@ module Libxlsxwriter
     # @param [Integer] last_col 
     # @param [String] formula 
     # @param [Format] format 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def write_array_formula(first_row, first_col, last_row, last_col, formula, format)
       Libxlsxwriter.worksheet_write_array_formula(self, first_row, first_col, last_row, last_col, formula, format)
     end
@@ -5940,16 +6434,16 @@ module Libxlsxwriter
     # @param [String] formula 
     # @param [Format] format 
     # @param [Float] result 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def write_array_formula_num(first_row, first_col, last_row, last_col, formula, format, result)
       Libxlsxwriter.worksheet_write_array_formula_num(self, first_row, first_col, last_row, last_col, formula, format, result)
     end
     
     # @param [Integer] row 
     # @param [Integer] col 
-    # @param [FFI::Pointer(*Datetime)] datetime 
+    # @param [Datetime] datetime 
     # @param [Format] format 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def write_datetime(row, col, datetime, format)
       Libxlsxwriter.worksheet_write_datetime(self, row, col, datetime, format)
     end
@@ -5960,7 +6454,7 @@ module Libxlsxwriter
     # @param [Format] format 
     # @param [String] string 
     # @param [String] tooltip 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def write_url_opt(row_num, col_num, url, format, string, tooltip)
       Libxlsxwriter.worksheet_write_url_opt(self, row_num, col_num, url, format, string, tooltip)
     end
@@ -5969,7 +6463,7 @@ module Libxlsxwriter
     # @param [Integer] col 
     # @param [String] url 
     # @param [Format] format 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def write_url(row, col, url, format)
       Libxlsxwriter.worksheet_write_url(self, row, col, url, format)
     end
@@ -5978,7 +6472,7 @@ module Libxlsxwriter
     # @param [Integer] col 
     # @param [Integer] value 
     # @param [Format] format 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def write_boolean(row, col, value, format)
       Libxlsxwriter.worksheet_write_boolean(self, row, col, value, format)
     end
@@ -5986,7 +6480,7 @@ module Libxlsxwriter
     # @param [Integer] row 
     # @param [Integer] col 
     # @param [Format] format 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def write_blank(row, col, format)
       Libxlsxwriter.worksheet_write_blank(self, row, col, format)
     end
@@ -5996,7 +6490,7 @@ module Libxlsxwriter
     # @param [String] formula 
     # @param [Format] format 
     # @param [Float] result 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def write_formula_num(row, col, formula, format, result)
       Libxlsxwriter.worksheet_write_formula_num(self, row, col, formula, format, result)
     end
@@ -6004,7 +6498,7 @@ module Libxlsxwriter
     # @param [Integer] row 
     # @param [Float] height 
     # @param [Format] format 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_row(row, height, format)
       Libxlsxwriter.worksheet_set_row(self, row, height, format)
     end
@@ -6013,7 +6507,7 @@ module Libxlsxwriter
     # @param [Float] height 
     # @param [Format] format 
     # @param [RowColOptions] options 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_row_opt(row, height, format, options)
       Libxlsxwriter.worksheet_set_row_opt(self, row, height, format, options)
     end
@@ -6022,7 +6516,7 @@ module Libxlsxwriter
     # @param [Integer] last_col 
     # @param [Float] width 
     # @param [Format] format 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_column(first_col, last_col, width, format)
       Libxlsxwriter.worksheet_set_column(self, first_col, last_col, width, format)
     end
@@ -6032,7 +6526,7 @@ module Libxlsxwriter
     # @param [Float] width 
     # @param [Format] format 
     # @param [RowColOptions] options 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_column_opt(first_col, last_col, width, format, options)
       Libxlsxwriter.worksheet_set_column_opt(self, first_col, last_col, width, format, options)
     end
@@ -6040,7 +6534,7 @@ module Libxlsxwriter
     # @param [Integer] row 
     # @param [Integer] col 
     # @param [String] filename 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def insert_image(row, col, filename)
       Libxlsxwriter.worksheet_insert_image(self, row, col, filename)
     end
@@ -6049,7 +6543,7 @@ module Libxlsxwriter
     # @param [Integer] col 
     # @param [String] filename 
     # @param [ImageOptions] options 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def insert_image_opt(row, col, filename, options)
       Libxlsxwriter.worksheet_insert_image_opt(self, row, col, filename, options)
     end
@@ -6057,7 +6551,7 @@ module Libxlsxwriter
     # @param [Integer] row 
     # @param [Integer] col 
     # @param [Chart] chart 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def insert_chart(row, col, chart)
       Libxlsxwriter.worksheet_insert_chart(self, row, col, chart)
     end
@@ -6066,7 +6560,7 @@ module Libxlsxwriter
     # @param [Integer] col 
     # @param [Chart] chart 
     # @param [ImageOptions] user_options 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def insert_chart_opt(row, col, chart, user_options)
       Libxlsxwriter.worksheet_insert_chart_opt(self, row, col, chart, user_options)
     end
@@ -6077,7 +6571,7 @@ module Libxlsxwriter
     # @param [Integer] last_col 
     # @param [String] string 
     # @param [Format] format 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def merge_range(first_row, first_col, last_row, last_col, string, format)
       Libxlsxwriter.worksheet_merge_range(self, first_row, first_col, last_row, last_col, string, format)
     end
@@ -6086,7 +6580,7 @@ module Libxlsxwriter
     # @param [Integer] first_col 
     # @param [Integer] last_row 
     # @param [Integer] last_col 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def autofilter(first_row, first_col, last_row, last_col)
       Libxlsxwriter.worksheet_autofilter(self, first_row, first_col, last_row, last_col)
     end
@@ -6094,7 +6588,7 @@ module Libxlsxwriter
     # @param [Integer] row 
     # @param [Integer] col 
     # @param [DataValidation] validation 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def data_validation_cell(row, col, validation)
       Libxlsxwriter.worksheet_data_validation_cell(self, row, col, validation)
     end
@@ -6104,7 +6598,7 @@ module Libxlsxwriter
     # @param [Integer] last_row 
     # @param [Integer] last_col 
     # @param [DataValidation] validation 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def data_validation_range(first_row, first_col, last_row, last_col, validation)
       Libxlsxwriter.worksheet_data_validation_range(self, first_row, first_col, last_row, last_col, validation)
     end
@@ -6202,39 +6696,39 @@ module Libxlsxwriter
     end
     
     # @param [String] string 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_header(string)
       Libxlsxwriter.worksheet_set_header(self, string)
     end
     
     # @param [String] string 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_footer(string)
       Libxlsxwriter.worksheet_set_footer(self, string)
     end
     
     # @param [String] string 
     # @param [HeaderFooterOptions] options 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_header_opt(string, options)
       Libxlsxwriter.worksheet_set_header_opt(self, string, options)
     end
     
     # @param [String] string 
     # @param [HeaderFooterOptions] options 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_footer_opt(string, options)
       Libxlsxwriter.worksheet_set_footer_opt(self, string, options)
     end
     
     # @param [FFI::Pointer(*U_int)] breaks 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_h_pagebreaks(breaks)
       Libxlsxwriter.worksheet_set_h_pagebreaks(self, breaks)
     end
     
     # @param [FFI::Pointer(*U_short)] breaks 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_v_pagebreaks(breaks)
       Libxlsxwriter.worksheet_set_v_pagebreaks(self, breaks)
     end
@@ -6273,14 +6767,14 @@ module Libxlsxwriter
     
     # @param [Integer] first_row 
     # @param [Integer] last_row 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def repeat_rows(first_row, last_row)
       Libxlsxwriter.worksheet_repeat_rows(self, first_row, last_row)
     end
     
     # @param [Integer] first_col 
     # @param [Integer] last_col 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def repeat_columns(first_col, last_col)
       Libxlsxwriter.worksheet_repeat_columns(self, first_col, last_col)
     end
@@ -6289,7 +6783,7 @@ module Libxlsxwriter
     # @param [Integer] first_col 
     # @param [Integer] last_row 
     # @param [Integer] last_col 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def print_area(first_row, first_col, last_row, last_col)
       Libxlsxwriter.worksheet_print_area(self, first_row, first_col, last_row, last_col)
     end
@@ -6660,9 +7154,9 @@ module Libxlsxwriter
   # @param [Integer] col 
   # @param [Float] number 
   # @param [Format] format 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_write_number, :worksheet_write_number, [Worksheet, :uint, :ushort, :double, Format], :char
+  attach_function :worksheet_write_number, :worksheet_write_number, [Worksheet, :uint, :ushort, :double, Format], :error
   
   # (Not documented)
   # 
@@ -6672,9 +7166,9 @@ module Libxlsxwriter
   # @param [Integer] col 
   # @param [String] string 
   # @param [Format] format 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_write_string, :worksheet_write_string, [Worksheet, :uint, :ushort, :string, Format], :char
+  attach_function :worksheet_write_string, :worksheet_write_string, [Worksheet, :uint, :ushort, :string, Format], :error
   
   # (Not documented)
   # 
@@ -6684,9 +7178,9 @@ module Libxlsxwriter
   # @param [Integer] col 
   # @param [String] formula 
   # @param [Format] format 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_write_formula, :worksheet_write_formula, [Worksheet, :uint, :ushort, :string, Format], :char
+  attach_function :worksheet_write_formula, :worksheet_write_formula, [Worksheet, :uint, :ushort, :string, Format], :error
   
   # (Not documented)
   # 
@@ -6698,9 +7192,9 @@ module Libxlsxwriter
   # @param [Integer] last_col 
   # @param [String] formula 
   # @param [Format] format 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_write_array_formula, :worksheet_write_array_formula, [Worksheet, :uint, :ushort, :uint, :ushort, :string, Format], :char
+  attach_function :worksheet_write_array_formula, :worksheet_write_array_formula, [Worksheet, :uint, :ushort, :uint, :ushort, :string, Format], :error
   
   # (Not documented)
   # 
@@ -6713,9 +7207,9 @@ module Libxlsxwriter
   # @param [String] formula 
   # @param [Format] format 
   # @param [Float] result 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_write_array_formula_num, :worksheet_write_array_formula_num, [Worksheet, :uint, :ushort, :uint, :ushort, :string, Format, :double], :char
+  attach_function :worksheet_write_array_formula_num, :worksheet_write_array_formula_num, [Worksheet, :uint, :ushort, :uint, :ushort, :string, Format, :double], :error
   
   # (Not documented)
   # 
@@ -6723,11 +7217,11 @@ module Libxlsxwriter
   # @param [Worksheet] worksheet 
   # @param [Integer] row 
   # @param [Integer] col 
-  # @param [FFI::Pointer(*Datetime)] datetime 
+  # @param [Datetime] datetime 
   # @param [Format] format 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_write_datetime, :worksheet_write_datetime, [Worksheet, :uint, :ushort, :pointer, Format], :char
+  attach_function :worksheet_write_datetime, :worksheet_write_datetime, [Worksheet, :uint, :ushort, Datetime, Format], :error
   
   # (Not documented)
   # 
@@ -6739,9 +7233,9 @@ module Libxlsxwriter
   # @param [Format] format 
   # @param [String] string 
   # @param [String] tooltip 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_write_url_opt, :worksheet_write_url_opt, [Worksheet, :uint, :ushort, :string, Format, :string, :string], :char
+  attach_function :worksheet_write_url_opt, :worksheet_write_url_opt, [Worksheet, :uint, :ushort, :string, Format, :string, :string], :error
   
   # (Not documented)
   # 
@@ -6751,9 +7245,9 @@ module Libxlsxwriter
   # @param [Integer] col 
   # @param [String] url 
   # @param [Format] format 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_write_url, :worksheet_write_url, [Worksheet, :uint, :ushort, :string, Format], :char
+  attach_function :worksheet_write_url, :worksheet_write_url, [Worksheet, :uint, :ushort, :string, Format], :error
   
   # (Not documented)
   # 
@@ -6763,9 +7257,9 @@ module Libxlsxwriter
   # @param [Integer] col 
   # @param [Integer] value 
   # @param [Format] format 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_write_boolean, :worksheet_write_boolean, [Worksheet, :uint, :ushort, :int, Format], :char
+  attach_function :worksheet_write_boolean, :worksheet_write_boolean, [Worksheet, :uint, :ushort, :int, Format], :error
   
   # (Not documented)
   # 
@@ -6774,9 +7268,9 @@ module Libxlsxwriter
   # @param [Integer] row 
   # @param [Integer] col 
   # @param [Format] format 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_write_blank, :worksheet_write_blank, [Worksheet, :uint, :ushort, Format], :char
+  attach_function :worksheet_write_blank, :worksheet_write_blank, [Worksheet, :uint, :ushort, Format], :error
   
   # (Not documented)
   # 
@@ -6787,9 +7281,9 @@ module Libxlsxwriter
   # @param [String] formula 
   # @param [Format] format 
   # @param [Float] result 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_write_formula_num, :worksheet_write_formula_num, [Worksheet, :uint, :ushort, :string, Format, :double], :char
+  attach_function :worksheet_write_formula_num, :worksheet_write_formula_num, [Worksheet, :uint, :ushort, :string, Format, :double], :error
   
   # (Not documented)
   # 
@@ -6798,9 +7292,9 @@ module Libxlsxwriter
   # @param [Integer] row 
   # @param [Float] height 
   # @param [Format] format 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_set_row, :worksheet_set_row, [Worksheet, :uint, :double, Format], :char
+  attach_function :worksheet_set_row, :worksheet_set_row, [Worksheet, :uint, :double, Format], :error
   
   # (Not documented)
   # 
@@ -6810,9 +7304,9 @@ module Libxlsxwriter
   # @param [Float] height 
   # @param [Format] format 
   # @param [RowColOptions] options 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_set_row_opt, :worksheet_set_row_opt, [Worksheet, :uint, :double, Format, RowColOptions], :char
+  attach_function :worksheet_set_row_opt, :worksheet_set_row_opt, [Worksheet, :uint, :double, Format, RowColOptions], :error
   
   # (Not documented)
   # 
@@ -6822,9 +7316,9 @@ module Libxlsxwriter
   # @param [Integer] last_col 
   # @param [Float] width 
   # @param [Format] format 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_set_column, :worksheet_set_column, [Worksheet, :ushort, :ushort, :double, Format], :char
+  attach_function :worksheet_set_column, :worksheet_set_column, [Worksheet, :ushort, :ushort, :double, Format], :error
   
   # (Not documented)
   # 
@@ -6835,9 +7329,9 @@ module Libxlsxwriter
   # @param [Float] width 
   # @param [Format] format 
   # @param [RowColOptions] options 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_set_column_opt, :worksheet_set_column_opt, [Worksheet, :ushort, :ushort, :double, Format, RowColOptions], :char
+  attach_function :worksheet_set_column_opt, :worksheet_set_column_opt, [Worksheet, :ushort, :ushort, :double, Format, RowColOptions], :error
   
   # (Not documented)
   # 
@@ -6846,9 +7340,9 @@ module Libxlsxwriter
   # @param [Integer] row 
   # @param [Integer] col 
   # @param [String] filename 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_insert_image, :worksheet_insert_image, [Worksheet, :uint, :ushort, :string], :char
+  attach_function :worksheet_insert_image, :worksheet_insert_image, [Worksheet, :uint, :ushort, :string], :error
   
   # (Not documented)
   # 
@@ -6858,9 +7352,9 @@ module Libxlsxwriter
   # @param [Integer] col 
   # @param [String] filename 
   # @param [ImageOptions] options 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_insert_image_opt, :worksheet_insert_image_opt, [Worksheet, :uint, :ushort, :string, ImageOptions], :char
+  attach_function :worksheet_insert_image_opt, :worksheet_insert_image_opt, [Worksheet, :uint, :ushort, :string, ImageOptions], :error
   
   # (Not documented)
   # 
@@ -6869,9 +7363,9 @@ module Libxlsxwriter
   # @param [Integer] row 
   # @param [Integer] col 
   # @param [Chart] chart 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_insert_chart, :worksheet_insert_chart, [Worksheet, :uint, :ushort, Chart], :char
+  attach_function :worksheet_insert_chart, :worksheet_insert_chart, [Worksheet, :uint, :ushort, Chart], :error
   
   # (Not documented)
   # 
@@ -6881,9 +7375,9 @@ module Libxlsxwriter
   # @param [Integer] col 
   # @param [Chart] chart 
   # @param [ImageOptions] user_options 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_insert_chart_opt, :worksheet_insert_chart_opt, [Worksheet, :uint, :ushort, Chart, ImageOptions], :char
+  attach_function :worksheet_insert_chart_opt, :worksheet_insert_chart_opt, [Worksheet, :uint, :ushort, Chart, ImageOptions], :error
   
   # (Not documented)
   # 
@@ -6895,9 +7389,9 @@ module Libxlsxwriter
   # @param [Integer] last_col 
   # @param [String] string 
   # @param [Format] format 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_merge_range, :worksheet_merge_range, [Worksheet, :uint, :ushort, :uint, :ushort, :string, Format], :char
+  attach_function :worksheet_merge_range, :worksheet_merge_range, [Worksheet, :uint, :ushort, :uint, :ushort, :string, Format], :error
   
   # (Not documented)
   # 
@@ -6907,9 +7401,9 @@ module Libxlsxwriter
   # @param [Integer] first_col 
   # @param [Integer] last_row 
   # @param [Integer] last_col 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_autofilter, :worksheet_autofilter, [Worksheet, :uint, :ushort, :uint, :ushort], :char
+  attach_function :worksheet_autofilter, :worksheet_autofilter, [Worksheet, :uint, :ushort, :uint, :ushort], :error
   
   # (Not documented)
   # 
@@ -6918,9 +7412,9 @@ module Libxlsxwriter
   # @param [Integer] row 
   # @param [Integer] col 
   # @param [DataValidation] validation 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_data_validation_cell, :worksheet_data_validation_cell, [Worksheet, :uint, :ushort, DataValidation], :char
+  attach_function :worksheet_data_validation_cell, :worksheet_data_validation_cell, [Worksheet, :uint, :ushort, DataValidation], :error
   
   # (Not documented)
   # 
@@ -6931,9 +7425,9 @@ module Libxlsxwriter
   # @param [Integer] last_row 
   # @param [Integer] last_col 
   # @param [DataValidation] validation 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_data_validation_range, :worksheet_data_validation_range, [Worksheet, :uint, :ushort, :uint, :ushort, DataValidation], :char
+  attach_function :worksheet_data_validation_range, :worksheet_data_validation_range, [Worksheet, :uint, :ushort, :uint, :ushort, DataValidation], :error
   
   # (Not documented)
   # 
@@ -7074,18 +7568,18 @@ module Libxlsxwriter
   # @method worksheet_set_header(worksheet, string)
   # @param [Worksheet] worksheet 
   # @param [String] string 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_set_header, :worksheet_set_header, [Worksheet, :string], :char
+  attach_function :worksheet_set_header, :worksheet_set_header, [Worksheet, :string], :error
   
   # (Not documented)
   # 
   # @method worksheet_set_footer(worksheet, string)
   # @param [Worksheet] worksheet 
   # @param [String] string 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_set_footer, :worksheet_set_footer, [Worksheet, :string], :char
+  attach_function :worksheet_set_footer, :worksheet_set_footer, [Worksheet, :string], :error
   
   # (Not documented)
   # 
@@ -7093,9 +7587,9 @@ module Libxlsxwriter
   # @param [Worksheet] worksheet 
   # @param [String] string 
   # @param [HeaderFooterOptions] options 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_set_header_opt, :worksheet_set_header_opt, [Worksheet, :string, HeaderFooterOptions], :char
+  attach_function :worksheet_set_header_opt, :worksheet_set_header_opt, [Worksheet, :string, HeaderFooterOptions], :error
   
   # (Not documented)
   # 
@@ -7103,27 +7597,27 @@ module Libxlsxwriter
   # @param [Worksheet] worksheet 
   # @param [String] string 
   # @param [HeaderFooterOptions] options 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_set_footer_opt, :worksheet_set_footer_opt, [Worksheet, :string, HeaderFooterOptions], :char
+  attach_function :worksheet_set_footer_opt, :worksheet_set_footer_opt, [Worksheet, :string, HeaderFooterOptions], :error
   
   # (Not documented)
   # 
   # @method worksheet_set_h_pagebreaks(worksheet, breaks)
   # @param [Worksheet] worksheet 
   # @param [FFI::Pointer(*U_int)] breaks 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_set_h_pagebreaks, :worksheet_set_h_pagebreaks, [Worksheet, :pointer], :char
+  attach_function :worksheet_set_h_pagebreaks, :worksheet_set_h_pagebreaks, [Worksheet, :pointer], :error
   
   # (Not documented)
   # 
   # @method worksheet_set_v_pagebreaks(worksheet, breaks)
   # @param [Worksheet] worksheet 
   # @param [FFI::Pointer(*U_short)] breaks 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_set_v_pagebreaks, :worksheet_set_v_pagebreaks, [Worksheet, :pointer], :char
+  attach_function :worksheet_set_v_pagebreaks, :worksheet_set_v_pagebreaks, [Worksheet, :pointer], :error
   
   # (Not documented)
   # 
@@ -7181,9 +7675,9 @@ module Libxlsxwriter
   # @param [Worksheet] worksheet 
   # @param [Integer] first_row 
   # @param [Integer] last_row 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_repeat_rows, :worksheet_repeat_rows, [Worksheet, :uint, :uint], :char
+  attach_function :worksheet_repeat_rows, :worksheet_repeat_rows, [Worksheet, :uint, :uint], :error
   
   # (Not documented)
   # 
@@ -7191,9 +7685,9 @@ module Libxlsxwriter
   # @param [Worksheet] worksheet 
   # @param [Integer] first_col 
   # @param [Integer] last_col 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_repeat_columns, :worksheet_repeat_columns, [Worksheet, :ushort, :ushort], :char
+  attach_function :worksheet_repeat_columns, :worksheet_repeat_columns, [Worksheet, :ushort, :ushort], :error
   
   # (Not documented)
   # 
@@ -7203,9 +7697,9 @@ module Libxlsxwriter
   # @param [Integer] first_col 
   # @param [Integer] last_row 
   # @param [Integer] last_col 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :worksheet_print_area, :worksheet_print_area, [Worksheet, :uint, :ushort, :uint, :ushort], :char
+  attach_function :worksheet_print_area, :worksheet_print_area, [Worksheet, :uint, :ushort, :uint, :ushort], :error
   
   # (Not documented)
   # 
@@ -7549,7 +8043,7 @@ module Libxlsxwriter
   # :ordered_charts ::
   #   (Charts) 
   # :formats ::
-  #   (FFI::Pointer(*Formats)) 
+  #   (Formats) 
   # :defined_names ::
   #   (DefinedNames) 
   # :sst ::
@@ -7557,7 +8051,7 @@ module Libxlsxwriter
   # :properties ::
   #   (DocProperties) 
   # :custom_properties ::
-  #   (FFI::Pointer(*CustomProperties)) 
+  #   (CustomProperties) 
   # :filename ::
   #   (String) 
   # :options ::
@@ -7613,55 +8107,55 @@ module Libxlsxwriter
       Chart.new Libxlsxwriter.workbook_add_chart(self, chart_type)
     end
     
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def close()
       Libxlsxwriter.workbook_close(self)
     end
     
     # @param [DocProperties] properties 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_properties(properties)
       Libxlsxwriter.workbook_set_properties(self, properties)
     end
     
     # @param [String] name 
     # @param [String] value 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_custom_property_string(name, value)
       Libxlsxwriter.workbook_set_custom_property_string(self, name, value)
     end
     
     # @param [String] name 
     # @param [Float] value 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_custom_property_number(name, value)
       Libxlsxwriter.workbook_set_custom_property_number(self, name, value)
     end
     
     # @param [String] name 
     # @param [Integer] value 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_custom_property_integer(name, value)
       Libxlsxwriter.workbook_set_custom_property_integer(self, name, value)
     end
     
     # @param [String] name 
     # @param [Integer] value 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def set_custom_property_boolean(name, value)
       Libxlsxwriter.workbook_set_custom_property_boolean(self, name, value)
     end
     
     # @param [String] name 
-    # @param [FFI::Pointer(*Datetime)] datetime 
-    # @return [unknown] 
+    # @param [Datetime] datetime 
+    # @return [Symbol from _enum_error_] 
     def set_custom_property_datetime(name, datetime)
       Libxlsxwriter.workbook_set_custom_property_datetime(self, name, datetime)
     end
     
     # @param [String] name 
     # @param [String] formula 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def define_name(name, formula)
       Libxlsxwriter.workbook_define_name(self, name, formula)
     end
@@ -7673,7 +8167,7 @@ module Libxlsxwriter
     end
     
     # @param [String] sheetname 
-    # @return [unknown] 
+    # @return [Symbol from _enum_error_] 
     def validate_worksheet_name(sheetname)
       Libxlsxwriter.workbook_validate_worksheet_name(self, sheetname)
     end
@@ -7701,11 +8195,11 @@ module Libxlsxwriter
            :worksheet_names, WorksheetNames,
            :charts, Charts,
            :ordered_charts, Charts,
-           :formats, :pointer,
+           :formats, Formats,
            :defined_names, DefinedNames,
            :sst, Sst,
            :properties, DocProperties,
-           :custom_properties, :pointer,
+           :custom_properties, CustomProperties,
            :filename, :string,
            :options, WorkbookOptions.by_value,
            :num_sheets, :ushort,
@@ -7796,18 +8290,18 @@ module Libxlsxwriter
   # 
   # @method workbook_close(workbook)
   # @param [Workbook] workbook 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :workbook_close, :workbook_close, [Workbook], :char
+  attach_function :workbook_close, :workbook_close, [Workbook], :error
   
   # (Not documented)
   # 
   # @method workbook_set_properties(workbook, properties)
   # @param [Workbook] workbook 
   # @param [DocProperties] properties 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :workbook_set_properties, :workbook_set_properties, [Workbook, DocProperties], :char
+  attach_function :workbook_set_properties, :workbook_set_properties, [Workbook, DocProperties], :error
   
   # (Not documented)
   # 
@@ -7815,9 +8309,9 @@ module Libxlsxwriter
   # @param [Workbook] workbook 
   # @param [String] name 
   # @param [String] value 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :workbook_set_custom_property_string, :workbook_set_custom_property_string, [Workbook, :string, :string], :char
+  attach_function :workbook_set_custom_property_string, :workbook_set_custom_property_string, [Workbook, :string, :string], :error
   
   # (Not documented)
   # 
@@ -7825,9 +8319,9 @@ module Libxlsxwriter
   # @param [Workbook] workbook 
   # @param [String] name 
   # @param [Float] value 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :workbook_set_custom_property_number, :workbook_set_custom_property_number, [Workbook, :string, :double], :char
+  attach_function :workbook_set_custom_property_number, :workbook_set_custom_property_number, [Workbook, :string, :double], :error
   
   # (Not documented)
   # 
@@ -7835,9 +8329,9 @@ module Libxlsxwriter
   # @param [Workbook] workbook 
   # @param [String] name 
   # @param [Integer] value 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :workbook_set_custom_property_integer, :workbook_set_custom_property_integer, [Workbook, :string, :int], :char
+  attach_function :workbook_set_custom_property_integer, :workbook_set_custom_property_integer, [Workbook, :string, :int], :error
   
   # (Not documented)
   # 
@@ -7845,19 +8339,19 @@ module Libxlsxwriter
   # @param [Workbook] workbook 
   # @param [String] name 
   # @param [Integer] value 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :workbook_set_custom_property_boolean, :workbook_set_custom_property_boolean, [Workbook, :string, :uchar], :char
+  attach_function :workbook_set_custom_property_boolean, :workbook_set_custom_property_boolean, [Workbook, :string, :uchar], :error
   
   # (Not documented)
   # 
   # @method workbook_set_custom_property_datetime(workbook, name, datetime)
   # @param [Workbook] workbook 
   # @param [String] name 
-  # @param [FFI::Pointer(*Datetime)] datetime 
-  # @return [unknown] 
+  # @param [Datetime] datetime 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :workbook_set_custom_property_datetime, :workbook_set_custom_property_datetime, [Workbook, :string, :pointer], :char
+  attach_function :workbook_set_custom_property_datetime, :workbook_set_custom_property_datetime, [Workbook, :string, Datetime], :error
   
   # (Not documented)
   # 
@@ -7865,9 +8359,9 @@ module Libxlsxwriter
   # @param [Workbook] workbook 
   # @param [String] name 
   # @param [String] formula 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :workbook_define_name, :workbook_define_name, [Workbook, :string, :string], :char
+  attach_function :workbook_define_name, :workbook_define_name, [Workbook, :string, :string], :error
   
   # (Not documented)
   # 
@@ -7883,9 +8377,9 @@ module Libxlsxwriter
   # @method workbook_validate_worksheet_name(workbook, sheetname)
   # @param [Workbook] workbook 
   # @param [String] sheetname 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :workbook_validate_worksheet_name, :workbook_validate_worksheet_name, [Workbook, :string], :char
+  attach_function :workbook_validate_worksheet_name, :workbook_validate_worksheet_name, [Workbook, :string], :error
   
   # (Not documented)
   # 
@@ -7975,7 +8469,7 @@ module Libxlsxwriter
   # :file ::
   #   (FFI::Pointer(*FILE)) 
   # :custom_properties ::
-  #   (FFI::Pointer(*CustomProperties)) 
+  #   (CustomProperties) 
   # :pid ::
   #   (Integer) 
   module CustomWrappers
@@ -7993,7 +8487,7 @@ module Libxlsxwriter
   class Custom < FFI::Struct
     include CustomWrappers
     layout :file, :pointer,
-           :custom_properties, :pointer,
+           :custom_properties, CustomProperties,
            :pid, :uint
   end
   
@@ -8074,9 +8568,9 @@ module Libxlsxwriter
   # :file ::
   #   (FFI::Pointer(*FILE)) 
   # :default_types ::
-  #   (FFI::Pointer(*Tuples)) 
+  #   (Tuples) 
   # :overrides ::
-  #   (FFI::Pointer(*Tuples)) 
+  #   (Tuples) 
   module ContentTypesWrappers
     # @return [nil] 
     def free()
@@ -8092,8 +8586,8 @@ module Libxlsxwriter
   class ContentTypes < FFI::Struct
     include ContentTypesWrappers
     layout :file, :pointer,
-           :default_types, :pointer,
-           :overrides, :pointer
+           :default_types, Tuples,
+           :overrides, Tuples
   end
   
   # (Not documented)
@@ -8495,9 +8989,9 @@ module Libxlsxwriter
   # :fill_count ::
   #   (Integer) 
   # :xf_formats ::
-  #   (FFI::Pointer(*Formats)) 
+  #   (Formats) 
   # :dxf_formats ::
-  #   (FFI::Pointer(*Formats)) 
+  #   (Formats) 
   module StylesWrappers
     # @return [nil] 
     def free()
@@ -8519,8 +9013,8 @@ module Libxlsxwriter
            :num_format_count, :uint,
            :border_count, :uint,
            :fill_count, :uint,
-           :xf_formats, :pointer,
-           :dxf_formats, :pointer
+           :xf_formats, Formats,
+           :dxf_formats, Formats
   end
   
   # *INDENT-ON*
@@ -8611,9 +9105,9 @@ module Libxlsxwriter
   # 
   # @method create_package(self_)
   # @param [Packager] self_ 
-  # @return [unknown] 
+  # @return [Symbol from _enum_error_] 
   # @scope class
-  attach_function :create_package, :lxw_create_package, [Packager], :char
+  attach_function :create_package, :lxw_create_package, [Packager], :error
   
   # (Not documented)
   # 
