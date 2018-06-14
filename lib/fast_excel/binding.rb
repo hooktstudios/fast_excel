@@ -93,6 +93,10 @@ module Libxlsxwriter
   
   CHART_DEFAULT_GAP = 501
   
+  MAX_ATTRIBUTE_LENGTH = 256
+  
+  ATTR_32 = 32
+  
   def cell(cell)
     return name_to_row(cell), name_to_col(cell)
   end
@@ -103,6 +107,10 @@ module Libxlsxwriter
   
   def range(range)
     return name_to_row(range), name_to_col(range), name_to_row_2(range), name_to_col_2(range)
+  end
+  
+  def sprintf_dbl(data, number)
+    snprintf(data, ATTR_32, "%.16g", number)
   end
   
   ROW_MAX = 1048576
@@ -127,11 +135,7 @@ module Libxlsxwriter
   
   ZIP_BUFFER_SIZE = 16384
   
-  MAX_ATTRIBUTE_LENGTH = 256
-  
-  ATTR_32 = 32
-  
-  VERSION = "0.7.6"
+  VERSION = "0.7.7"
   
   # (Not documented)
   # 
@@ -2511,6 +2515,27 @@ module Libxlsxwriter
   
   # (Not documented)
   # 
+  # <em>This entry is only for documentation and no real method. The FFI::Enum can be accessed via #enum_type(:chart_axis_label_alignment).</em>
+  # 
+  # === Options:
+  # :center ::
+  #   Series data label alignment: center.
+  # :left ::
+  #   Series data label alignment: left.
+  # :right ::
+  #   Series data label alignment: right.
+  # 
+  # @method _enum_chart_axis_label_alignment_
+  # @return [Symbol]
+  # @scope class
+  enum :chart_axis_label_alignment, [
+    :center, 0,
+    :left, 1,
+    :right, 2
+  ]
+  
+  # (Not documented)
+  # 
   # <em>This entry is only for documentation and no real method. The FFI::Enum can be accessed via #enum_type(:chart_axis_display_unit).</em>
   # 
   # === Options:
@@ -3402,6 +3427,8 @@ module Libxlsxwriter
   #   (Integer) 
   # :position_axis ::
   #   (Integer) 
+  # :label_alignment ::
+  #   (Integer) 
   # :label_position ::
   #   (Integer) 
   # :hidden ::
@@ -3524,6 +3551,12 @@ module Libxlsxwriter
       Libxlsxwriter.chart_axis_set_label_position(self, position)
     end
     
+    # @param [Integer] alignment 
+    # @return [nil] 
+    def set_label_alignment(alignment)
+      Libxlsxwriter.chart_axis_set_label_alignment(self, alignment)
+    end
+    
     # @param [Float] min 
     # @return [nil] 
     def set_min(min)
@@ -3635,6 +3668,7 @@ module Libxlsxwriter
            :is_value, :uchar,
            :axis_position, :uchar,
            :position_axis, :uchar,
+           :label_alignment, :uchar,
            :label_position, :uchar,
            :hidden, :uchar,
            :reverse, :uchar,
@@ -4559,6 +4593,15 @@ module Libxlsxwriter
   
   # (Not documented)
   # 
+  # @method chart_axis_set_label_alignment(axis, alignment)
+  # @param [ChartAxis] axis 
+  # @param [Integer] alignment 
+  # @return [nil] 
+  # @scope class
+  attach_function :chart_axis_set_label_alignment, :chart_axis_set_label_alignment, [ChartAxis, :uchar], :void
+  
+  # (Not documented)
+  # 
   # @method chart_axis_set_min(axis, min)
   # @param [ChartAxis] axis 
   # @param [Float] min 
@@ -5195,6 +5238,153 @@ module Libxlsxwriter
   # @return [nil] 
   # @scope class
   attach_function :add_drawing_object, :lxw_add_drawing_object, [Drawing, DrawingObject], :void
+  
+  # (Not documented)
+  # 
+  # = Fields:
+  # :stqe_next ::
+  #   (FFI::Pointer(*XmlAttribute)) 
+  class XmlAttributeListEntries < FFI::Struct
+    layout :stqe_next, :pointer
+  end
+  
+  # (Not documented)
+  # 
+  # = Fields:
+  # :key ::
+  #   (Array<Integer>) 
+  # :value ::
+  #   (Array<Integer>) 
+  # :list_entries ::
+  #   (XmlAttributeListEntries) 
+  class XmlAttribute < FFI::Struct
+    layout :key, [:char, 256],
+           :value, [:char, 256],
+           :list_entries, XmlAttributeListEntries.by_value
+  end
+  
+  # (Not documented)
+  # 
+  # = Fields:
+  # :stqh_first ::
+  #   (XmlAttribute) 
+  # :stqh_last ::
+  #   (FFI::Pointer(**XmlAttribute)) 
+  class XmlAttributeList < FFI::Struct
+    layout :stqh_first, XmlAttribute,
+           :stqh_last, :pointer
+  end
+  
+  # (Not documented)
+  # 
+  # @method new_attribute_str(key, value)
+  # @param [String] key 
+  # @param [String] value 
+  # @return [XmlAttribute] 
+  # @scope class
+  attach_function :new_attribute_str, :lxw_new_attribute_str, [:string, :string], XmlAttribute
+  
+  # (Not documented)
+  # 
+  # @method new_attribute_int(key, value)
+  # @param [String] key 
+  # @param [Integer] value 
+  # @return [XmlAttribute] 
+  # @scope class
+  attach_function :new_attribute_int, :lxw_new_attribute_int, [:string, :uint], XmlAttribute
+  
+  # (Not documented)
+  # 
+  # @method new_attribute_dbl(key, value)
+  # @param [String] key 
+  # @param [Float] value 
+  # @return [XmlAttribute] 
+  # @scope class
+  attach_function :new_attribute_dbl, :lxw_new_attribute_dbl, [:string, :double], XmlAttribute
+  
+  # (Not documented)
+  # 
+  # @method xml_declaration(xmlfile)
+  # @param [FFI::Pointer(*FILE)] xmlfile 
+  # @return [nil] 
+  # @scope class
+  attach_function :xml_declaration, :lxw_xml_declaration, [:pointer], :void
+  
+  # (Not documented)
+  # 
+  # @method xml_start_tag(xmlfile, tag, attributes)
+  # @param [FFI::Pointer(*FILE)] xmlfile 
+  # @param [String] tag 
+  # @param [XmlAttributeList] attributes 
+  # @return [nil] 
+  # @scope class
+  attach_function :xml_start_tag, :lxw_xml_start_tag, [:pointer, :string, XmlAttributeList], :void
+  
+  # (Not documented)
+  # 
+  # @method xml_start_tag_unencoded(xmlfile, tag, attributes)
+  # @param [FFI::Pointer(*FILE)] xmlfile 
+  # @param [String] tag 
+  # @param [XmlAttributeList] attributes 
+  # @return [nil] 
+  # @scope class
+  attach_function :xml_start_tag_unencoded, :lxw_xml_start_tag_unencoded, [:pointer, :string, XmlAttributeList], :void
+  
+  # (Not documented)
+  # 
+  # @method xml_end_tag(xmlfile, tag)
+  # @param [FFI::Pointer(*FILE)] xmlfile 
+  # @param [String] tag 
+  # @return [nil] 
+  # @scope class
+  attach_function :xml_end_tag, :lxw_xml_end_tag, [:pointer, :string], :void
+  
+  # (Not documented)
+  # 
+  # @method xml_empty_tag(xmlfile, tag, attributes)
+  # @param [FFI::Pointer(*FILE)] xmlfile 
+  # @param [String] tag 
+  # @param [XmlAttributeList] attributes 
+  # @return [nil] 
+  # @scope class
+  attach_function :xml_empty_tag, :lxw_xml_empty_tag, [:pointer, :string, XmlAttributeList], :void
+  
+  # (Not documented)
+  # 
+  # @method xml_empty_tag_unencoded(xmlfile, tag, attributes)
+  # @param [FFI::Pointer(*FILE)] xmlfile 
+  # @param [String] tag 
+  # @param [XmlAttributeList] attributes 
+  # @return [nil] 
+  # @scope class
+  attach_function :xml_empty_tag_unencoded, :lxw_xml_empty_tag_unencoded, [:pointer, :string, XmlAttributeList], :void
+  
+  # (Not documented)
+  # 
+  # @method xml_data_element(xmlfile, tag, data, attributes)
+  # @param [FFI::Pointer(*FILE)] xmlfile 
+  # @param [String] tag 
+  # @param [String] data 
+  # @param [XmlAttributeList] attributes 
+  # @return [nil] 
+  # @scope class
+  attach_function :xml_data_element, :lxw_xml_data_element, [:pointer, :string, :string, XmlAttributeList], :void
+  
+  # (Not documented)
+  # 
+  # @method escape_control_characters(string)
+  # @param [String] string 
+  # @return [String] 
+  # @scope class
+  attach_function :escape_control_characters, :lxw_escape_control_characters, [:string], :string
+  
+  # (Not documented)
+  # 
+  # @method escape_data(data)
+  # @param [String] data 
+  # @return [String] 
+  # @scope class
+  attach_function :escape_data, :lxw_escape_data, [:string], :string
   
   # (Not documented)
   # 
@@ -8096,11 +8286,6 @@ module Libxlsxwriter
       Format.new Libxlsxwriter.workbook_add_format(self)
     end
     
-    # @return [Format] 
-    def default_format()
-      Format.new Libxlsxwriter.workbook_default_format(self)
-    end
-    
     # @param [Integer] chart_type 
     # @return [Chart] 
     def add_chart(chart_type)
@@ -8268,14 +8453,6 @@ module Libxlsxwriter
   # @return [Format] 
   # @scope class
   attach_function :workbook_add_format, :workbook_add_format, [Workbook], Format
-  
-  # (Not documented)
-  # 
-  # @method workbook_default_format(workbook)
-  # @param [Workbook] workbook 
-  # @return [Format] 
-  # @scope class
-  attach_function :workbook_default_format, :workbook_default_format, [Workbook], Format
   
   # (Not documented)
   # 
@@ -9084,7 +9261,7 @@ module Libxlsxwriter
            :drawing_count, :ushort
   end
   
-  # (Not documented)
+  # *INDENT-ON*
   # 
   # @method packager_new(filename, tmpdir)
   # @param [String] filename 
@@ -9108,180 +9285,5 @@ module Libxlsxwriter
   # @return [Symbol from _enum_error_] 
   # @scope class
   attach_function :create_package, :lxw_create_package, [Packager], :error
-  
-  # (Not documented)
-  # 
-  # = Fields:
-  # :stqe_next ::
-  #   (FFI::Pointer(*XmlAttribute)) 
-  class XmlAttributeListEntries < FFI::Struct
-    layout :stqe_next, :pointer
-  end
-  
-  # (Not documented)
-  # 
-  # = Fields:
-  # :key ::
-  #   (Array<Integer>) 
-  # :value ::
-  #   (Array<Integer>) 
-  # :list_entries ::
-  #   (XmlAttributeListEntries) 
-  class XmlAttribute < FFI::Struct
-    layout :key, [:char, 256],
-           :value, [:char, 256],
-           :list_entries, XmlAttributeListEntries.by_value
-  end
-  
-  # Use queue.h macros to define the xml_attribute_list type.
-  # 
-  # = Fields:
-  # :stqh_first ::
-  #   (XmlAttribute) 
-  # :stqh_last ::
-  #   (FFI::Pointer(**XmlAttribute)) 
-  class XmlAttributeList < FFI::Struct
-    layout :stqh_first, XmlAttribute,
-           :stqh_last, :pointer
-  end
-  
-  # Create a new attribute struct to add to a xml_attribute_list.
-  # 
-  # @method new_attribute_str(key, value)
-  # @param [String] key 
-  # @param [String] value 
-  # @return [XmlAttribute] 
-  # @scope class
-  attach_function :new_attribute_str, :lxw_new_attribute_str, [:string, :string], XmlAttribute
-  
-  # (Not documented)
-  # 
-  # @method new_attribute_int(key, value)
-  # @param [String] key 
-  # @param [Integer] value 
-  # @return [XmlAttribute] 
-  # @scope class
-  attach_function :new_attribute_int, :lxw_new_attribute_int, [:string, :uint], XmlAttribute
-  
-  # (Not documented)
-  # 
-  # @method new_attribute_dbl(key, value)
-  # @param [String] key 
-  # @param [Float] value 
-  # @return [XmlAttribute] 
-  # @scope class
-  attach_function :new_attribute_dbl, :lxw_new_attribute_dbl, [:string, :double], XmlAttribute
-  
-  # Create the XML declaration in an XML file.
-  # 
-  # @param xmlfile A FILE pointer to the output XML file.
-  # 
-  # @method xml_declaration(xmlfile)
-  # @param [FFI::Pointer(*FILE)] xmlfile 
-  # @return [nil] 
-  # @scope class
-  attach_function :xml_declaration, :lxw_xml_declaration, [:pointer], :void
-  
-  # Write an XML start tag with optional attributes.
-  # 
-  # @param xmlfile    A FILE pointer to the output XML file.
-  # @param tag        The XML tag to write.
-  # @param attributes An optional list of attributes to add to the tag.
-  # 
-  # @method xml_start_tag(xmlfile, tag, attributes)
-  # @param [FFI::Pointer(*FILE)] xmlfile 
-  # @param [String] tag 
-  # @param [XmlAttributeList] attributes 
-  # @return [nil] 
-  # @scope class
-  attach_function :xml_start_tag, :lxw_xml_start_tag, [:pointer, :string, XmlAttributeList], :void
-  
-  # Write an XML start tag with optional un-encoded attributes.
-  # This is a minor optimization for attributes that don't need encoding.
-  # 
-  # @param xmlfile    A FILE pointer to the output XML file.
-  # @param tag        The XML tag to write.
-  # @param attributes An optional list of attributes to add to the tag.
-  # 
-  # @method xml_start_tag_unencoded(xmlfile, tag, attributes)
-  # @param [FFI::Pointer(*FILE)] xmlfile 
-  # @param [String] tag 
-  # @param [XmlAttributeList] attributes 
-  # @return [nil] 
-  # @scope class
-  attach_function :xml_start_tag_unencoded, :lxw_xml_start_tag_unencoded, [:pointer, :string, XmlAttributeList], :void
-  
-  # Write an XML end tag.
-  # 
-  # @param xmlfile    A FILE pointer to the output XML file.
-  # @param tag        The XML tag to write.
-  # 
-  # @method xml_end_tag(xmlfile, tag)
-  # @param [FFI::Pointer(*FILE)] xmlfile 
-  # @param [String] tag 
-  # @return [nil] 
-  # @scope class
-  attach_function :xml_end_tag, :lxw_xml_end_tag, [:pointer, :string], :void
-  
-  # Write an XML empty tag with optional attributes.
-  # 
-  # @param xmlfile    A FILE pointer to the output XML file.
-  # @param tag        The XML tag to write.
-  # @param attributes An optional list of attributes to add to the tag.
-  # 
-  # @method xml_empty_tag(xmlfile, tag, attributes)
-  # @param [FFI::Pointer(*FILE)] xmlfile 
-  # @param [String] tag 
-  # @param [XmlAttributeList] attributes 
-  # @return [nil] 
-  # @scope class
-  attach_function :xml_empty_tag, :lxw_xml_empty_tag, [:pointer, :string, XmlAttributeList], :void
-  
-  # Write an XML empty tag with optional un-encoded attributes.
-  # This is a minor optimization for attributes that don't need encoding.
-  # 
-  # @param xmlfile    A FILE pointer to the output XML file.
-  # @param tag        The XML tag to write.
-  # @param attributes An optional list of attributes to add to the tag.
-  # 
-  # @method xml_empty_tag_unencoded(xmlfile, tag, attributes)
-  # @param [FFI::Pointer(*FILE)] xmlfile 
-  # @param [String] tag 
-  # @param [XmlAttributeList] attributes 
-  # @return [nil] 
-  # @scope class
-  attach_function :xml_empty_tag_unencoded, :lxw_xml_empty_tag_unencoded, [:pointer, :string, XmlAttributeList], :void
-  
-  # Write an XML element containing data and optional attributes.
-  # 
-  # @param xmlfile    A FILE pointer to the output XML file.
-  # @param tag        The XML tag to write.
-  # @param data       The data section of the XML element.
-  # @param attributes An optional list of attributes to add to the tag.
-  # 
-  # @method xml_data_element(xmlfile, tag, data, attributes)
-  # @param [FFI::Pointer(*FILE)] xmlfile 
-  # @param [String] tag 
-  # @param [String] data 
-  # @param [XmlAttributeList] attributes 
-  # @return [nil] 
-  # @scope class
-  attach_function :xml_data_element, :lxw_xml_data_element, [:pointer, :string, :string, XmlAttributeList], :void
-  
-  # (Not documented)
-  # 
-  # @method escape_control_characters(string)
-  # @param [String] string 
-  # @return [String] 
-  # @scope class
-  attach_function :escape_control_characters, :lxw_escape_control_characters, [:string], :string
-  
-  # (Not documented)
-  # 
-  # @method escape_data(data)
-  # @param [String] data 
-  # @return [String] 
-  # @scope class
-  attach_function :escape_data, :lxw_escape_data, [:string], :string
   
 end

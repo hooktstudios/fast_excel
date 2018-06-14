@@ -314,7 +314,6 @@ format_set_font_size(lxw_format *self, double size)
 
     if (size >= LXW_MIN_FONT_SIZE && size <= LXW_MAX_FONT_SIZE)
         self->font_size = size;
-    if (size < LXW_MIN_FONT_SIZE) self->font_size = 0;
 }
 
 /*
